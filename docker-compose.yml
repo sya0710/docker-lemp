@@ -1,69 +1,56 @@
 version: '3.5'
 
 services:
-  api:
+  laravel:
     build:
-      context: ./projects/api
-    container_name: api-1.0.0
+      context: ./projects/laravel
+    container_name: laravel-10
     restart: always
     ports:
       - "81:80"
     links:
-      - mysql
-      - redis
+      - postgresql
     volumes:
-      - ${API_DOCUMENT_ROOT-./projects/api}:/var/www/html
+      - ${API_DOCUMENT_ROOT-./projects/laravel}:/var/www/html
       - ${PHP_INI-./docker/config/php/php.ini}:/usr/local/etc/php/php.ini
       - ${VHOSTS_DIR-./docker/config/vhosts}:/etc/apache2/sites-enabled
       - ${APACHE_LOG_DIR-./docker/logs/apache2}:/var/log/apache2
-  backend:
+#  backend:
+#    build:
+#      context: ./projects/backend
+#    container_name: backend-1.0.0
+#    restart: always
+#    ports:
+#      - "4200:4200"
+#    links:
+#      - laravel
+#    volumes:
+#      - ${BACKEND_DOCUMENT_ROOT-./projects/backend}:/projects/backend
+#      - /projects/backend/node_modules
+#    command: ng serve --host 0.0.0.0
+#    working_dir: /projects/backend
+  postgresql:
     build:
-      context: ./projects/backend
-    container_name: backend-1.0.0
+      context: ./docker/bin/postgresql
+    container_name: postgresql-15.2
     restart: always
     ports:
-      - "4200:4200"
-    links:
-      - api
+      - "${POSTGRES_PORT}:5432"
     volumes:
-      - ${BACKEND_DOCUMENT_ROOT-./projects/backend}:/projects/backend
-      - /projects/backend/node_modules
-    command: ng serve --host 0.0.0.0
-    working_dir: /projects/backend
-  mysql:
-    build:
-      context: ./docker/bin/mysql
-    container_name: mysql-1.0.0
-    restart: always
-    ports:
-      - "${MYSQL_PORT}:3306"
-    volumes:
-      - ${MYSQL_DATA_DIR-./docker/data/mysql}:/var/lib/mysql
-      - ${MYSQL_LOG_DIR-./docker/logs/mysql}:/var/log/mysql
+      - ${POSTGRES_DATA_DIR-./docker/data/postgresql}:/var/lib/postgresql/data
+      - ${POSTGRES_LOG_DIR-./docker/logs/postgresql}:/logs
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-  redis:
-    build:
-      context: ./docker/bin/redis
-    container_name: redis-1.0.0
-    restart: always
-    ports:
-      - "${REDIS_PORT}:6379"
-    volumes:
-      - ${REDIS_DATA_DIR-./docker/data/redis}:/data
-      - ${REDIS_LOG_DIR-./docker/logs/redis}:/var/log/redis
-      - ${REDIS_CONF-./docker/config/redis/redis.conf}:/usr/local/etc/redis/redis.conf
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
   nginx:
     build:
       context: ./docker/bin/nginx
     container_name: nginx-reverse-proxy
     restart: always
     links:
-      - api
-      - backend
+      - laravel
+#      - backend
     ports:
       - "${HTTP_WEBSERVER_PORT}:80"
       - "${HTTPS_WEBSERVER_PORT}:443"

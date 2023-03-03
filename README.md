@@ -3,11 +3,9 @@ Auto build LEMP Application with: nginx is proxy, apache run php and auto build 
 
 ## Version
 
-*  PHP = 7.3
-*  Phalcon = 4.0.6
-*  Angular = 15.2.0
-*  MySQL = 5.7
-*  Redis = 6.0.6
+*  PHP = 8.2.3
+*  Laravel = 10
+*  Postgresql = 15.2
 
 ## Installation
 
@@ -55,4 +53,20 @@ ERROR: for node  Cannot create container for service node: no space left on devi
 
 ```
 docker volume rm $(docker volume ls -q)
+```
+
+### Export file docker image to server
+
+```
+docker run -i --rm docker-lemp_postgresql cat /usr/local/share/postgresql/postgresql.conf.sample > my-postgres.conf
+
+ls -l
+```
+
+### Change alias connect laravel sub path url
+
+Edit file docker/config/vhosts/default.conf with below:
+
+```
+Alias /backend "/var/www/html/public"
 ```
