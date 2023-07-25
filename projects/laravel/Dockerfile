@@ -1,7 +1,8 @@
 FROM php:8.2.3-apache
 
 RUN apt-get update && apt-get install -y nano \
-    libzip-dev
+    libzip-dev \
+    libpq-dev
 
 RUN apt-get upgrade -y
 
@@ -37,10 +38,11 @@ RUN docker-php-ext-install curl \
 	zip \
 	pcntl \
 	pdo_mysql \
-    xml
+    xml \
+    sockets
 
 RUN docker-php-ext-configure pgsql \
-    && docker-php-ext-install pgsql pdo_pgsql
+    && docker-php-ext-install pdo pgsql pdo_pgsql
 
 RUN docker-php-ext-enable curl \
     intl \
@@ -76,3 +78,10 @@ RUN a2enmod rewrite headers
 RUN pecl install apcu && docker-php-ext-enable apcu
 RUN chmod 777 -R /tmp && chmod o+t -R /tmp
 #APCU
+
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions && sync && install-php-extensions amqp
+
+#Install Redis
+RUN pecl install redis \
+    && docker-php-ext-enable redis

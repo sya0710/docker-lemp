@@ -1,20 +1,23 @@
-# docker-lemp
-Auto build LEMP Application with: nginx is proxy, apache run php and auto build angular, phalcon
+# docker-lamp
+Auto build LAMP Application with: apache run php and laravel, redis
 
 ## Version
 
 *  PHP = 8.2.3
-*  Laravel = 10
-*  Postgresql = 15.2
+*  Laravel
+*  Postgresql = 15.2.0
+*  Mailcatcher = 0.8.2
+*  Redis = 6.0.6
 
 ## Installation
 
 Build project and run project with steps:
 
-### Copy environment file
+### Copy environment file and vendor backup if exists
 
 ```
 cp .env.example .env
+cp -a /source/. /dest/
 ```
 
 ### Run docker compose build and deploy
@@ -23,19 +26,30 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-## How to access API, Backend in Docker
+### Automatic installation
 
-### Api
+```
+./installation.sh Or docker-compose run --rm laravel ./installation.sh
+```
 
-- [Link access api with port](http://domain:81/api/v1/path_api)
+### Or Installation project with step
+```
+docker exec -it laravel bash
+composer dump
+chown www-data:www-data -R storage/
+php artisan clear-compiled
+php artisan route:clear
+php artisan view:clear
+php artisan cache:clear
+php artisan config:clear
+```
 
-- [Link access api no port](http://domain/api/v1/path_api)
+### Run restore Postgresql
 
-### Backend
-
-- [Link access backend with port](http://domain:4201)
-
-- [Link access backend no port](http://domain)
+```
+docker exec -it postgresql-15.2 bash
+pg_restore -U docker -d docker staging_local_2507.sql
+```
 
 ## Guide help build docker
 
@@ -53,20 +67,4 @@ ERROR: for node  Cannot create container for service node: no space left on devi
 
 ```
 docker volume rm $(docker volume ls -q)
-```
-
-### Export file docker image to server
-
-```
-docker run -i --rm docker-lemp_postgresql cat /usr/local/share/postgresql/postgresql.conf.sample > my-postgres.conf
-
-ls -l
-```
-
-### Change alias connect laravel sub path url
-
-Edit file docker/config/vhosts/default.conf with below:
-
-```
-Alias /backend "/var/www/html/public"
 ```
